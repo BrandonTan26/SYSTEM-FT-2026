@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Search - Brandon Tan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .aurora {
+      background: linear-gradient(45deg, #0a0a2e, #1a0033, #2a004d, #001a33);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .neon {
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+    }
+  </style>
+</head>
+<body class="aurora text-white min-h-screen">
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center">
+    <div class="glass p-8 rounded-3xl w-full max-w-md neon">
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold mb-2">Enterprise Search</h1>
+        <p class="text-purple-300">Digital Creative Studio</p>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm mb-2">Username</label>
+          <input id="username" type="text" value="Brandon26" 
+                 class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400">
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Password</label>
+          <div class="relative">
+            <input id="password" type="password" value="Admin123" 
+                   class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-400">
+            <button onclick="togglePassword()" class="absolute right-4 top-3.5 text-gray-400 hover:text-white">
+              <i class="fa fa-eye" id="eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="accent-purple-500">
+            <span class="text-sm">Remember Me</span>
+          </label>
+          <a href="#" class="text-purple-400 text-sm hover:underline">Lupa Password?</a>
+        </div>
+        <button onclick="login()" 
+                class="w-full bg-gradient-to-r from-purple-600 to-pink-600 py-4 rounded-2xl font-semibold text-lg hover:scale-105 transition-all">
+          LOGIN
+        </button>
+      </div>
+      <p class="text-center text-xs text-gray-400 mt-8">Enterprise Edition v1.0</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="hidden min-h-screen flex">
+    <!-- SIDEBAR -->
+    <div class="w-72 glass border-r border-white/10 min-h-screen p-6 fixed">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-xl font-bold">BT</div>
+        <div>
+          <h2 class="font-bold text-xl">Enterprise Search</h2>
+          <p class="text-xs text-purple-300">by Brandon Tan</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1">
+        <a onclick="showSection('dashboard')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer active">
+          <i class="fa fa-home"></i> Dashboard
+        </a>
+        <a onclick="showSection('search')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer">
+          <i class="fa fa-search"></i> Search Answer
+        </a>
+        <a onclick="showSection('database')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer">
+          <i class="fa fa-database"></i> Database
+        </a>
+        <a onclick="showSection('stats')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer">
+          <i class="fa fa-chart-bar"></i> Statistics
+        </a>
+        <a onclick="showSection('history')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer">
+          <i class="fa fa-history"></i> History
+        </a>
+        <a onclick="showSection('settings')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 cursor-pointer">
+          <i class="fa fa-cog"></i> Settings
+        </a>
+      </nav>
+
+      <div class="absolute bottom-8 left-6 right-6">
+        <button onclick="logout()" 
+                class="w-full flex items-center justify-center gap-2 text-red-400 hover:bg-red-500/10 py-3 rounded-2xl">
+          <i class="fa fa-sign-out"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="ml-72 flex-1 p-8">
+      <!-- TOP BAR -->
+      <div class="flex justify-between items-center mb-8">
+        <button onclick="toggleSidebar()" class="lg:hidden text-3xl"><i class="fa fa-bars"></i></button>
+        <div class="flex-1 max-w-xl mx-4">
+          <div class="relative">
+            <input id="topSearch" type="text" placeholder="Cari cepat..." 
+                   class="w-full glass rounded-2xl py-3 px-5 pl-12 focus:outline-none">
+            <i class="fa fa-search absolute left-5 top-4 text-gray-400"></i>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div id="currentTime" class="text-right"></div>
+          <div class="w-10 h-10 bg-purple-500 rounded-2xl flex items-center justify-center font-bold">BT</div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD SECTION -->
+      <div id="dashboard" class="section">
+        <h1 class="text-4xl font-bold mb-2">Selamat datang kembali, Brandon 👋</h1>
+        <p class="text-purple-300 mb-8">Enterprise Edition • Digital Creative Studio</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="glass rounded-3xl p-6 neon">
+            <h3 class="text-lg">Total Database</h3>
+            <p id="totalDb" class="text-5xl font-bold mt-4">12,458</p>
+          </div>
+          <div class="glass rounded-3xl p-6 neon">
+            <h3 class="text-lg">Total Pencarian</h3>
+            <p id="totalSearch" class="text-5xl font-bold mt-4">87,291</p>
+          </div>
+          <div class="glass rounded-3xl p-6 neon">
+            <h3 class="text-lg">Record Hari Ini</h3>
+            <p class="text-5xl font-bold mt-4 text-green-400">1,284</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH SECTION -->
+      <div id="search" class="section hidden">
+        <h2 class="text-3xl font-bold mb-6">Search Engine</h2>
+        <div class="glass rounded-3xl p-6">
+          <input id="mainSearch" type="text" placeholder="Ketik pertanyaan atau keyword..." 
+                 class="w-full bg-transparent border-b border-white/30 pb-4 text-lg focus:outline-none" onkeypress="if(event.key==='Enter') performSearch()">
+          <button onclick="performSearch()" class="mt-4 px-8 py-3 bg-purple-600 rounded-2xl">Cari</button>
+        </div>
+        <div id="searchResults" class="mt-8 space-y-4"></div>
+      </div>
+
+      <!-- DATABASE SECTION -->
+      <div id="database" class="section hidden">
+        <h2 class="text-3xl font-bold mb-6">Database Management</h2>
+        <div class="glass rounded-3xl p-8 text-center border-2 border-dashed border-white/30" 
+             ondrop="handleDrop(event)" ondragover="event.preventDefault()">
+          <i class="fa fa-cloud-upload text-6xl mb-4 text-purple-400"></i>
+          <p class="text-xl mb-2">Drag & Drop Excel / CSV</p>
+          <p class="text-sm text-gray-400 mb-6">atau</p>
+          <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" onchange="handleFileUpload(this)" class="hidden">
+          <button onclick="document.getElementById('excelInput').click()" 
+                  class="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-2xl">
+            Pilih File Excel
+          </button>
+        </div>
+        <div id="dbTableContainer" class="mt-8"></div>
+      </div>
+
+      <!-- STATISTICS, HISTORY, SETTINGS -->
+      <div id="stats" class="section hidden">
+        <h2 class="text-3xl font-bold mb-6">Statistics</h2>
+        <p class="glass p-8 rounded-3xl">Activity chart & top searched akan ditampilkan di sini (versi full).</p>
+      </div>
+      <div id="history" class="section hidden">
+        <h2 class="text-3xl font-bold mb-6">Riwayat Pencarian</h2>
+        <p class="glass p-8 rounded-3xl">Riwayat akan muncul di sini.</p>
+      </div>
+      <div id="settings" class="section hidden">
+        <h2 class="text-3xl font-bold mb-6">Settings</h2>
+        <div class="glass p-8 rounded-3xl space-y-6">
+          <button onclick="toggleDarkMode()" class="px-6 py-3 bg-white/10 rounded-2xl">Toggle Dark/Light Mode</button>
+          <button class="px-6 py-3 bg-white/10 rounded-2xl">Ganti Password</button>
+          <button onclick="exportDatabase()" class="px-6 py-3 bg-green-600 rounded-2xl">Export Seluruh Database</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="fixed bottom-0 left-0 right-0 text-center py-3 text-xs text-gray-500 bg-black/30">
+    Created by Brandon Tan • D&D A Digital Creative Studio • Enterprise Edition v1.0
+  </footer>
+
+  <script>
+    let currentUser = "Brandon26";
+    let database = [];
+
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      const eye = document.getElementById('eye');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        eye.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pwd.type = 'password';
+        eye.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === "Brandon26" && pass === "Admin123") {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        updateClock();
+        setInterval(updateClock, 1000);
+      } else {
+        alert("Username atau Password salah!");
+      }
+    }
+
+    function logout() {
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('currentTime').innerHTML = `
+        ${now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}<br>
+        <span class="text-2xl">${now.toLocaleTimeString('id-ID')}</span>
+      `;
+    }
+
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(section).classList.remove('hidden');
+    }
+
+    function performSearch() {
+      const query = document.getElementById('mainSearch').value.toLowerCase();
+      const resultsDiv = document.getElementById('searchResults');
+      resultsDiv.innerHTML = '';
+
+      if (!database.length) {
+        resultsDiv.innerHTML = `<p class="text-center text-gray-400">Belum ada database. Upload Excel di menu Database.</p>`;
+        return;
+      }
+
+      const filtered = database.filter(row => 
+        Object.values(row).some(val => String(val).toLowerCase().includes(query))
+      );
+
+      if (!filtered.length) {
+        resultsDiv.innerHTML = `<p class="text-center text-red-400">Tidak ditemukan hasil untuk "${query}"</p>`;
+        return;
+      }
+
+      let html = `<p class="mb-4 text-green-400">${filtered.length} hasil ditemukan</p>`;
+      filtered.forEach(row => {
+        html += `<div class="glass p-5 rounded-2xl mb-4">`;
+        Object.entries(row).forEach(([key, val]) => {
+          html += `<p><strong>${key}:</strong> ${val}</p>`;
+        });
+        html += `</div>`;
+      });
+      resultsDiv.innerHTML = html;
+    }
+
+    function handleFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        database = XLSX.utils.sheet_to_json(sheet);
+        
+        renderDatabaseTable();
+        alert(`Berhasil mengupload ${database.length} record!`);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          const data = new Uint8Array(ev.target.result);
+          const workbook = XLSX.read(data, {type: 'array'});
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          database = XLSX.utils.sheet_to_json(sheet);
+          renderDatabaseTable();
+          alert(`Berhasil drag & drop ${database.length} record!`);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function renderDatabaseTable() {
+      if (!database.length) return;
+      let html = `<div class="glass rounded-3xl overflow-hidden"><table class="w-full"><thead class="bg-white/10"><tr>`;
+      Object.keys(database[0]).forEach(key => {
+        html += `<th class="p-4 text-left">${key}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+      
+      database.forEach(row => {
+        html += `<tr class="border-t border-white/10">`;
+        Object.values(row).forEach(val => {
+          html += `<td class="p-4">${val}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      document.getElementById('dbTableContainer').innerHTML = html;
+    }
+
+    function toggleDarkMode() {
+      alert("Mode Dark/Light sudah aktif (Aurora default).");
+    }
+
+    function exportDatabase() {
+      if (!database.length) {
+        alert("Database kosong!");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(database);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Database");
+      XLSX.writeFile(wb, "enterprise_database_export.xlsx");
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        showSection('search');
+        document.getElementById('mainSearch').focus();
+      }
+    });
+
+    showSection('dashboard');
+  </script>
+</body>
+</html>
